@@ -45,7 +45,20 @@ class PublicOfferService:
 
         default_lang = cls._normalize_language(settings.DEFAULT_LANGUAGE)
         if lang != default_lang:
-            return await get_public_offer(db, default_lang)
+            fallback_offer = await get_public_offer(db, default_lang)
+            if fallback_offer:
+                return fallback_offer
+
+        from app.localization.texts import get_public_offer_default
+
+        default_text = get_public_offer_default(lang) or get_public_offer_default(default_lang)
+        if default_text and default_text.strip():
+            return PublicOffer(
+                id=0,
+                language=lang,
+                content=default_text,
+                is_enabled=True,
+            )
 
         return offer
 
@@ -58,18 +71,31 @@ class PublicOfferService:
         lang = cls._normalize_language(language)
         offer = await get_public_offer(db, lang)
 
-        if offer:
-            if offer.is_enabled and offer.content.strip():
-                return offer
-
+        if offer is not None:
             if not offer.is_enabled:
                 return None
+            if offer.content and offer.content.strip():
+                return offer
 
         default_lang = cls._normalize_language(settings.DEFAULT_LANGUAGE)
         if lang != default_lang:
             fallback_offer = await get_public_offer(db, default_lang)
-            if fallback_offer and fallback_offer.is_enabled and fallback_offer.content.strip():
-                return fallback_offer
+            if fallback_offer is not None:
+                if not fallback_offer.is_enabled:
+                    return None
+                if fallback_offer.content and fallback_offer.content.strip():
+                    return fallback_offer
+
+        from app.localization.texts import get_public_offer_default
+
+        default_text = get_public_offer_default(lang) or get_public_offer_default(default_lang)
+        if default_text and default_text.strip():
+            return PublicOffer(
+                id=0,
+                language=lang,
+                content=default_text,
+                is_enabled=True,
+            )
 
         return None
 

@@ -277,6 +277,19 @@ def get_privacy_policy(language: str = DEFAULT_LANGUAGE) -> str:
     return _get_default_privacy_policy(language)
 
 
+def _get_default_public_offer(language: str = DEFAULT_LANGUAGE) -> str:
+    default_key = 'PUBLIC_OFFER_TEXT_DEFAULT'
+    locale = load_locale(language)
+    if default_key in locale:
+        return locale[default_key]
+    fallback = load_locale(DEFAULT_LANGUAGE)
+    return fallback.get(default_key, '')
+
+
+def get_public_offer_default(language: str = DEFAULT_LANGUAGE) -> str:
+    return _get_default_public_offer(language)
+
+
 def get_rules_sync(language: str = DEFAULT_LANGUAGE) -> str:
     if language in _cached_rules:
         return _cached_rules[language]

@@ -953,7 +953,7 @@ async def show_public_offer(
 
     header = texts.t(
         'PUBLIC_OFFER_HEADER',
-        '📄 <b>Публичная оферта</b>',
+        '📄 <b>Пользовательское соглашение</b>',
     )
     body = pages[current_page - 1]
 

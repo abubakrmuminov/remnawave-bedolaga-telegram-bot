@@ -43,7 +43,20 @@ class PrivacyPolicyService:
 
         default_lang = cls._normalize_language(settings.DEFAULT_LANGUAGE)
         if lang != default_lang:
-            return await get_privacy_policy(db, default_lang)
+            fallback_policy = await get_privacy_policy(db, default_lang)
+            if fallback_policy:
+                return fallback_policy
+
+        from app.localization.texts import get_privacy_policy as get_default_policy
+
+        default_text = get_default_policy(lang) or get_default_policy(default_lang)
+        if default_text and default_text.strip():
+            return PrivacyPolicy(
+                id=0,
+                language=lang,
+                content=default_text,
+                is_enabled=True,
+            )
 
         return policy
 
@@ -56,14 +69,31 @@ class PrivacyPolicyService:
         lang = cls._normalize_language(language)
         policy = await get_privacy_policy(db, lang)
 
-        if policy and policy.is_enabled and policy.content.strip():
-            return policy
+        if policy is not None:
+            if not policy.is_enabled:
+                return None
+            if policy.content and policy.content.strip():
+                return policy
 
         default_lang = cls._normalize_language(settings.DEFAULT_LANGUAGE)
         if lang != default_lang:
             fallback_policy = await get_privacy_policy(db, default_lang)
-            if fallback_policy and fallback_policy.is_enabled and fallback_policy.content.strip():
-                return fallback_policy
+            if fallback_policy is not None:
+                if not fallback_policy.is_enabled:
+                    return None
+                if fallback_policy.content and fallback_policy.content.strip():
+                    return fallback_policy
+
+        from app.localization.texts import get_privacy_policy as get_default_policy
+
+        default_text = get_default_policy(lang) or get_default_policy(default_lang)
+        if default_text and default_text.strip():
+            return PrivacyPolicy(
+                id=0,
+                language=lang,
+                content=default_text,
+                is_enabled=True,
+            )
 
         return None
 
