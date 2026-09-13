@@ -19,6 +19,7 @@ from app.database.crud.subscription import (
 )
 from app.database.models import Subscription, SubscriptionStatus, User
 from app.localization.texts import Texts, get_texts
+from app.utils.miniapp_buttons import build_miniapp_or_callback_button
 
 
 logger = structlog.get_logger(__name__)
@@ -97,7 +98,7 @@ def _build_subscriptions_keyboard(
     buy_text = getattr(texts, 'MENU_BUY_SUBSCRIPTION', 'Купить ещё тариф')
     buttons.append(
         [
-            types.InlineKeyboardButton(text=f'➕ {buy_text}', callback_data='menu_buy'),
+            build_miniapp_or_callback_button(text=f'➕ {buy_text}', callback_data='menu_buy'),
         ]
     )
     if gift_enabled:
@@ -175,7 +176,12 @@ async def show_my_subscriptions(
     if not subscriptions:
         text = '📋 <b>Мои подписки</b>\n\nУ вас нет подписок.'
         buttons = [
-            [types.InlineKeyboardButton(text='🛒 Купить подписку', callback_data='menu_buy')],
+            [
+                build_miniapp_or_callback_button(
+                    text=texts.t('MENU_BUY_SUBSCRIPTION', '💎 Купить подписку'),
+                    callback_data='menu_buy',
+                )
+            ],
         ]
         if gift_enabled:
             buttons.append(

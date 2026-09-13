@@ -1203,7 +1203,11 @@ def get_subscription_keyboard(
 
         if is_trial:
             keyboard.append(
-                [InlineKeyboardButton(text=texts.MENU_BUY_SUBSCRIPTION, callback_data='subscription_upgrade')]
+                [
+                    build_miniapp_or_callback_button(
+                        text=texts.MENU_BUY_SUBSCRIPTION, callback_data='subscription_upgrade'
+                    )
+                ]
             )
         else:
             # Проверяем, является ли тариф суточным
@@ -1255,7 +1259,7 @@ def get_subscription_keyboard(
                 # Теперь для таких подписок показываем «Купить тариф» (покупку с нуля).
                 if getattr(subscription, 'actual_status', None) in ('expired', 'disabled'):
                     settings_row.append(
-                        InlineKeyboardButton(
+                        build_miniapp_or_callback_button(
                             text=texts.t('BUY_TARIFF_BUTTON', '📦 Купить тариф'), callback_data='menu_buy'
                         )
                     )
@@ -1292,6 +1296,15 @@ def get_subscription_keyboard(
                         )
                     ]
                 )
+    else:
+        keyboard.append(
+            [
+                build_miniapp_or_callback_button(
+                    text=texts.MENU_BUY_SUBSCRIPTION,
+                    callback_data='menu_buy',
+                )
+            ]
+        )
 
     if gift_enabled:
         keyboard.append(
