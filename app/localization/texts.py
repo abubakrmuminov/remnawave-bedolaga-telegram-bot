@@ -290,6 +290,11 @@ def get_public_offer_default(language: str = DEFAULT_LANGUAGE) -> str:
     return _get_default_public_offer(language)
 
 
+def get_default_rules(language: str = DEFAULT_LANGUAGE) -> str:
+    """Правила из локали — когда в базе их нет или они пустые."""
+    return _get_default_rules(language)
+
+
 def get_rules_sync(language: str = DEFAULT_LANGUAGE) -> str:
     if language in _cached_rules:
         return _cached_rules[language]
