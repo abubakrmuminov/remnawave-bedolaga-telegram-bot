@@ -7,6 +7,7 @@ from aiogram.exceptions import TelegramAPIError, TelegramBadRequest, TelegramFor
 from aiogram.types import InaccessibleMessage, InputMediaPhoto
 
 from app.config import settings
+from app.utils.custom_emoji import format_custom_emojis
 
 from .message_patch import (
     LOGO_PATH,
@@ -71,6 +72,8 @@ async def safe_edit_or_resend(
         reply_markup: Клавиатура (опционально).
     """
     try:
+        if isinstance(text, str):
+            text = format_custom_emojis(text)
         await message.edit_text(text, reply_markup=reply_markup)
     except TelegramBadRequest as error:
         # Контент не изменился (повторное нажатие кнопки) — ничего не делаем,
@@ -98,7 +101,11 @@ async def _answer_text(
         caption = append_privacy_hint(caption, language)
         kwargs = prepare_privacy_safe_kwargs(kwargs)
 
-    kwargs.setdefault('parse_mode', parse_mode or 'HTML')
+    resolved_parse_mode = parse_mode or 'HTML'
+    kwargs.setdefault('parse_mode', resolved_parse_mode)
+
+    if resolved_parse_mode == 'HTML' and isinstance(caption, str):
+        caption = format_custom_emojis(caption)
 
     await callback.message.answer(
         caption,
@@ -115,6 +122,8 @@ async def edit_or_answer_photo(
     force_text: bool = False,
 ) -> None:
     resolved_parse_mode = parse_mode or 'HTML'
+    if resolved_parse_mode == 'HTML' and isinstance(caption, str):
+        caption = format_custom_emojis(caption)
 
     # Если сообщение недоступно, отправляем новое сообщение
     if isinstance(callback.message, InaccessibleMessage):

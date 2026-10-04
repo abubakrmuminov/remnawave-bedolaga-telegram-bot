@@ -19,6 +19,7 @@ from app.keyboards.inline import (
 )
 from app.localization.texts import get_texts
 from app.states import BalanceStates
+from app.utils.custom_emoji import format_custom_emojis
 from app.utils.decorators import error_handler
 from app.utils.timezone import format_local_datetime
 
@@ -260,7 +261,7 @@ async def show_balance_menu(callback: types.CallbackQuery, db_user: User, db: As
 
     texts = get_texts(db_user.language)
 
-    balance_text = texts.BALANCE_INFO.format(balance=texts.format_price(db_user.balance_kopeks))
+    balance_text = format_custom_emojis(texts.BALANCE_INFO.format(balance=texts.format_price(db_user.balance_kopeks)))
 
     reply_markup = get_balance_keyboard(db_user.language)
 
@@ -338,7 +339,7 @@ async def show_balance_history(callback: types.CallbackQuery, db_user: User, db:
     keyboard.append([types.InlineKeyboardButton(text=texts.BACK, callback_data='menu_balance')])
 
     await callback.message.edit_text(
-        text, reply_markup=types.InlineKeyboardMarkup(inline_keyboard=keyboard), parse_mode='HTML'
+        format_custom_emojis(text), reply_markup=types.InlineKeyboardMarkup(inline_keyboard=keyboard), parse_mode='HTML'
     )
     await callback.answer()
 

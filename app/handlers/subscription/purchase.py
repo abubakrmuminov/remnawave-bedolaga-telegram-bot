@@ -10,6 +10,7 @@ from aiogram.types import InaccessibleMessage, InlineKeyboardButton, InlineKeybo
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.utils.custom_emoji import format_custom_emojis
 from app.database.crud.subscription import (
     apply_trial_conversion_defaults,
     create_paid_subscription,
@@ -257,7 +258,7 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
         if subscription.is_trial:
             actual_status = 'trial_active'
             status_display = texts.t('SUBSCRIPTION_STATUS_TRIAL', 'Тестовая')
-            status_emoji = '🎯'
+            status_emoji = '🎁'
         else:
             actual_status = 'paid_active'
             status_display = texts.t('SUBSCRIPTION_STATUS_ACTIVE', 'Активна')
@@ -489,7 +490,7 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
         )
 
     await callback.message.edit_text(
-        message,
+        format_custom_emojis(message),
         reply_markup=get_subscription_keyboard(
             db_user.language,
             has_subscription=True,

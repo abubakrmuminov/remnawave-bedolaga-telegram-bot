@@ -4,7 +4,7 @@ import re
 from html.parser import HTMLParser
 
 
-TELEGRAM_ALLOWED_TAGS = frozenset({'b', 'i', 'u', 's', 'a', 'code', 'pre', 'blockquote'})
+TELEGRAM_ALLOWED_TAGS = frozenset({'b', 'i', 'u', 's', 'a', 'code', 'pre', 'blockquote', 'tg-emoji'})
 
 _TAG_ALIASES = {'strong': 'b', 'em': 'i', 'ins': 'u', 'strike': 's', 'del': 's'}
 
@@ -90,6 +90,13 @@ class _TelegramHtmlRenderer(HTMLParser):
                 if len(escaped) <= _MAX_HREF_LENGTH:
                     self._parts.append(f'<a href="{escaped}">')
                     self._open_tags.append('a')
+            return
+        if tag == 'tg-emoji':
+            emoji_id = next((value for name, value in attrs if name == 'emoji-id'), None)
+            if emoji_id:
+                escaped_id = html_module.escape(str(emoji_id).strip(), quote=True)
+                self._parts.append(f'<tg-emoji emoji-id="{escaped_id}">')
+                self._open_tags.append('tg-emoji')
             return
         if tag in TELEGRAM_ALLOWED_TAGS:
             self._parts.append(f'<{tag}>')

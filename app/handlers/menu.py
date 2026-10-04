@@ -35,6 +35,7 @@ from app.services.subscription_checkout_service import (
 )
 from app.services.support_settings_service import SupportSettingsService
 from app.services.user_cart_service import user_cart_service
+from app.utils.custom_emoji import format_custom_emojis
 from app.utils.display_mode import is_visible_in_bot
 from app.utils.photo_message import edit_or_answer_photo
 from app.utils.pricing_utils import format_period_description
@@ -1475,12 +1476,12 @@ async def get_main_menu_text(user, texts, db: AsyncSession):
     try:
         random_message = await get_random_active_message(db)
         if random_message:
-            return _insert_random_message(base_text, random_message, action_prompt)
+            return format_custom_emojis(_insert_random_message(base_text, random_message, action_prompt))
 
     except Exception as e:
         logger.error('Ошибка получения случайного сообщения', error=e)
 
-    return base_text
+    return format_custom_emojis(base_text)
 
 
 async def handle_activate_button(callback: types.CallbackQuery, db_user: User, db: AsyncSession):

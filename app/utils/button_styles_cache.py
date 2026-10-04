@@ -16,9 +16,9 @@ logger = structlog.get_logger(__name__)
 # ---- Defaults per section ------------------------------------------------
 
 DEFAULT_BUTTON_STYLES: dict[str, dict] = {
-    'home': {'style': 'primary', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},
-    'subscription': {'style': 'success', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},
-    'balance': {'style': 'primary', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},
+    'home': {'style': 'primary', 'icon_custom_emoji_id': '5879770735999717115', 'enabled': True, 'labels': {}},
+    'subscription': {'style': 'success', 'icon_custom_emoji_id': '5931409969613116639', 'enabled': True, 'labels': {}},
+    'balance': {'style': 'primary', 'icon_custom_emoji_id': '5992430854909989581', 'enabled': True, 'labels': {}},
     'referral': {'style': 'success', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},
     'support': {'style': 'primary', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},
     'info': {'style': 'primary', 'icon_custom_emoji_id': '', 'enabled': True, 'labels': {}},

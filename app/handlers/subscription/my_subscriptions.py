@@ -19,6 +19,7 @@ from app.database.crud.subscription import (
 )
 from app.database.models import Subscription, SubscriptionStatus, User
 from app.localization.texts import Texts, get_texts
+from app.utils.custom_emoji import format_custom_emojis
 from app.utils.legacy_subscription import is_legacy_subscription
 from app.utils.miniapp_buttons import build_miniapp_or_callback_button
 from app.utils.timezone import format_local_datetime
@@ -35,7 +36,9 @@ def _status_emoji(sub) -> str:
     if actual in ('active', 'trial'):
         return '🟢'
     if actual == 'limited':
-        return '🟡'
+        return '⚠️'
+    if actual == 'disabled':
+        return '⚫️'
     return '🔴'
 
 
@@ -198,7 +201,7 @@ async def show_my_subscriptions(
         keyboard = _build_subscriptions_keyboard(subscriptions, db_user.language, gift_enabled=gift_enabled)
 
     if callback.message:
-        await callback.message.edit_text(text, reply_markup=keyboard, parse_mode='HTML')
+        await callback.message.edit_text(format_custom_emojis(text), reply_markup=keyboard, parse_mode='HTML')
     await callback.answer()
 
 
@@ -251,7 +254,7 @@ async def show_subscription_detail(
     keyboard = _build_subscription_detail_keyboard(sub_id, sub=subscription)
 
     if callback.message:
-        await callback.message.edit_text(text, reply_markup=keyboard, parse_mode='HTML')
+        await callback.message.edit_text(format_custom_emojis(text), reply_markup=keyboard, parse_mode='HTML')
     await callback.answer()
 
 
