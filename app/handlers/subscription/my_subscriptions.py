@@ -64,19 +64,10 @@ def _format_subscription_line(sub, idx: int) -> str:
         used = f'{sub.traffic_used_gb:.1f}' if sub.traffic_used_gb else '0'
         traffic = f'{used}/{sub.traffic_limit_gb} ГБ'
 
-    # Devices
-    devices = f'{Texts.format_device_limit(sub.device_limit)} устр.' if sub.device_limit is not None else ''
-
     # End date
     end_date = format_local_datetime(sub.end_date, '%d.%m.%Y') if sub.end_date else '—'
 
-    parts = [f'{emoji} <b>{idx}. {tariff_name}</b>{label}']
-    parts.append(f'   📊 Трафик: {traffic}')
-    if devices:
-        parts.append(f'   📱 Устройства: {devices}')
-    parts.append(f'   📅 До: {end_date}')
-
-    return '\n'.join(parts)
+    return f'{emoji} <b>{idx}. {tariff_name}</b>{label} — {traffic} | до {end_date}'
 
 
 def _build_subscriptions_keyboard(
@@ -179,7 +170,7 @@ async def show_my_subscriptions(
     subscriptions = await get_all_subscriptions_by_user_id(db, db_user.id)
 
     if not subscriptions:
-        text = '📋 <b>Мои подписки</b>\n\nУ вас нет подписок.'
+        text = '🛡 <b>Мои подписки</b>\n\n❌ Нет активных подписок.'
         buttons = [
             [
                 build_miniapp_or_callback_button(
@@ -200,10 +191,9 @@ async def show_my_subscriptions(
         buttons.append([types.InlineKeyboardButton(text='◀️ Назад', callback_data='back_to_menu')])
         keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
     else:
-        lines = ['📋 <b>Мои подписки</b>\n']
+        lines = ['🛡 <b>Мои подписки</b>\n']
         for idx, sub in enumerate(subscriptions, 1):
             lines.append(_format_subscription_line(sub, idx))
-            lines.append('')  # empty line between subscriptions
         text = '\n'.join(lines)
         keyboard = _build_subscriptions_keyboard(subscriptions, db_user.language, gift_enabled=gift_enabled)
 
@@ -248,11 +238,11 @@ async def show_subscription_detail(
     status = subscription.status_display
 
     text = (
-        f'📋 <b>{tariff_name}</b>\n\n'
-        f'Статус: {status}\n'
-        f'📊 Трафик: {traffic}\n'
-        f'📱 Устройства: {Texts.format_device_limit(subscription.device_limit)}\n'
-        f'📅 До: {end_date}\n'
+        f'🛡 <b>{tariff_name}</b>\n\n'
+        f'• <b>Статус:</b> {status}\n'
+        f'• <b>Трафик:</b> {traffic}\n'
+        f'• <b>Устройства:</b> {Texts.format_device_limit(subscription.device_limit)}\n'
+        f'• <b>Действует до:</b> {end_date}\n'
     )
 
     if subscription.subscription_url and not settings.should_hide_subscription_link():

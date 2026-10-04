@@ -75,47 +75,26 @@ async def show_referral_info(callback: types.CallbackQuery, db_user: User, db: A
     referral_text = (
         texts.t('REFERRAL_PROGRAM_TITLE', '👥 <b>Реферальная программа</b>')
         + '\n\n'
-        + texts.t('REFERRAL_STATS_HEADER', '📊 <b>Ваша статистика:</b>')
-        + '\n'
         + texts.t(
             'REFERRAL_STATS_INVITED',
-            '• Приглашено пользователей: <b>{count}</b>',
+            '• Приглашено: <b>{count}</b>',
         ).format(count=summary['invited_count'])
         + '\n'
         + texts.t(
-            'REFERRAL_STATS_FIRST_TOPUPS',
-            '• Сделали первое пополнение: <b>{count}</b>',
-        ).format(count=summary['paid_referrals_count'])
-        + '\n'
-        + texts.t(
             'REFERRAL_STATS_ACTIVE',
-            '• Активных рефералов: <b>{count}</b>',
+            '• Активных: <b>{count}</b>',
         ).format(count=summary['active_referrals_count'])
         + '\n'
         + texts.t(
-            'REFERRAL_STATS_CONVERSION',
-            '• Конверсия: <b>{rate}%</b>',
-        ).format(rate=summary['conversion_rate'])
-        + '\n'
-        + texts.t(
             'REFERRAL_STATS_TOTAL_EARNED',
-            '• Заработано всего: <b>{amount}</b>',
+            '• Заработано: <b>{amount}</b>',
         ).format(
             amount=format_reward_total(
                 summary['total_earned_kopeks'], summary.get('total_earned_days', 0), db_user.language
             )
         )
-        + '\n'
-        + texts.t(
-            'REFERRAL_STATS_MONTH_EARNED',
-            '• За последний месяц: <b>{amount}</b>',
-        ).format(
-            amount=format_reward_total(
-                summary['month_earned_kopeks'], summary.get('month_earned_days', 0), db_user.language
-            )
-        )
         + '\n\n'
-        + texts.t('REFERRAL_REWARDS_HEADER', '🎁 <b>Как работают награды:</b>')
+        + texts.t('REFERRAL_REWARDS_HEADER', '🎁 <b>Условия:</b>')
     )
 
     levels_scheme = settings.is_referral_levels_scheme()

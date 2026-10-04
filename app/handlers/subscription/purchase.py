@@ -345,82 +345,30 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
                 # Прикрепляем тариф к подписке для использования в клавиатуре
                 subscription.tariff = tariff
 
-                # Формируем блок информации о тарифе
+                # Формируем блок информации о тарифе (минималистичный стиль)
                 is_daily = getattr(tariff, 'is_daily', False)
-                tariff_type_str = '🔄 Суточный' if is_daily else '📅 Периодный'
-
-                tariff_info_lines = [
-                    f'<b>📦 {html.escape(tariff.name)}</b>',
-                    f'Тип: {tariff_type_str}',
-                    f'Трафик: {tariff.traffic_limit_gb} ГБ' if tariff.traffic_limit_gb > 0 else 'Трафик: ∞ Безлимит',
-                    f'Устройства: {Texts.format_device_limit(tariff.device_limit)}',
-                ]
+                tariff_name_clean = html.escape(tariff.name)
 
                 if is_daily:
-                    # Для суточного тарифа показываем цену с учётом скидки промогруппы + promo-offer
-                    raw_daily_kopeks = getattr(tariff, 'daily_price_kopeks', 0)
-                    promo_group = (
-                        db_user.get_primary_promo_group() if hasattr(db_user, 'get_primary_promo_group') else None
-                    )
-                    daily_group_pct = promo_group.get_discount_percent('period', 1) if promo_group else 0
-                    from app.services.pricing_engine import PricingEngine
-                    from app.utils.promo_offer import get_user_active_promo_discount_percent
-
-                    daily_offer_pct = get_user_active_promo_discount_percent(db_user)
-                    if daily_group_pct > 0 or daily_offer_pct > 0:
-                        daily_kopeks, _, _ = PricingEngine.apply_stacked_discounts(
-                            raw_daily_kopeks, daily_group_pct, daily_offer_pct
-                        )
-                    else:
-                        daily_kopeks = raw_daily_kopeks
-                    daily_price = daily_kopeks / 100
-                    tariff_info_lines.append(f'Цена: {daily_price:.2f} ₽/день')
-
-                    # Прогресс-бар до следующего списания
                     last_charge = getattr(subscription, 'last_daily_charge_at', None)
                     is_paused = getattr(subscription, 'is_daily_paused', False)
 
                     if is_paused:
-                        tariff_info_lines.append('')
-                        tariff_info_lines.append('⏸️ <b>Подписка приостановлена</b>')
-                        # Показываем оставшееся время даже при паузе
-                        if last_charge:
-                            next_charge = last_charge + timedelta(hours=24)
-                            now = datetime.now(UTC)
-                            if next_charge > now:
-                                time_until = next_charge - now
-                                hours_left = time_until.seconds // 3600
-                                minutes_left = (time_until.seconds % 3600) // 60
-                                tariff_info_lines.append(f'⏳ Осталось: {hours_left}ч {minutes_left}мин')
-                                tariff_info_lines.append('💤 Списание приостановлено')
+                        tariff_info_block = f': <b>{tariff_name_clean}</b>\n• <b>Списание:</b> приостановлено'
                     elif last_charge:
                         next_charge = last_charge + timedelta(hours=24)
                         now = datetime.now(UTC)
-
                         if next_charge > now:
                             time_until = next_charge - now
                             hours_left = time_until.seconds // 3600
                             minutes_left = (time_until.seconds % 3600) // 60
-
-                            # Процент оставшегося времени (24 часа = 100%)
-                            total_seconds = 24 * 3600
-                            remaining_seconds = time_until.total_seconds()
-                            percent = min(100, max(0, (remaining_seconds / total_seconds) * 100))
-
-                            # Генерируем прогресс-бар
-                            bar_length = 10
-                            filled = int(bar_length * percent / 100)
-                            empty = bar_length - filled
-                            progress_bar = '▓' * filled + '░' * empty
-
-                            tariff_info_lines.append('')
-                            tariff_info_lines.append(f'⏳ До списания: {hours_left}ч {minutes_left}мин')
-                            tariff_info_lines.append(f'[{progress_bar}] {percent:.0f}%')
+                            tariff_info_block = f': <b>{tariff_name_clean}</b>\n• <b>До списания:</b> {hours_left}ч {minutes_left}мин'
+                        else:
+                            tariff_info_block = f': <b>{tariff_name_clean}</b>'
                     else:
-                        tariff_info_lines.append('')
-                        tariff_info_lines.append('⏳ Первое списание скоро')
-
-                tariff_info_block = '\n<blockquote expandable>' + '\n'.join(tariff_info_lines) + '</blockquote>'
+                        tariff_info_block = f': <b>{tariff_name_clean}</b>'
+                else:
+                    tariff_info_block = f': <b>{tariff_name_clean}</b>'
 
         except Exception as e:
             logger.warning('Ошибка получения тарифа', error=e, exc_info=True)
@@ -432,36 +380,27 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
         # Для суточных тарифов другой шаблон без "Действует до" и "Осталось"
         message_template = texts.t(
             'SUBSCRIPTION_DAILY_OVERVIEW_TEMPLATE',
-            """👤 {full_name}
-💰 Баланс: {balance}
-📱 Подписка: {status_emoji} {status_display}{warning}{tariff_info_block}
+            """🛡 <b>Подписка</b>{tariff_info_block}
 
-📱 Информация о подписке
-🎭 Тип: {subscription_type}
-📈 Трафик: {traffic}
-🌍 Серверы: {servers}
-📱 Устройства: {devices_used} / {device_limit}""",
+• <b>Статус:</b> {status_emoji} {status_display}{warning}
+• <b>Трафик:</b> {traffic}
+• <b>Устройства:</b> {devices_used} / {device_limit}""",
         )
     else:
         message_template = texts.t(
             'SUBSCRIPTION_OVERVIEW_TEMPLATE',
-            """👤 {full_name}
-💰 Баланс: {balance}
-📱 Подписка: {status_emoji} {status_display}{warning}{tariff_info_block}
+            """🛡 <b>Подписка</b>{tariff_info_block}
 
-📱 Информация о подписке
-🎭 Тип: {subscription_type}
-📅 Действует до: {end_date}
-⏰ Осталось: {time_left}
-📈 Трафик: {traffic}
-🌍 Серверы: {servers}
-📱 Устройства: {devices_used} / {device_limit}""",
+• <b>Статус:</b> {status_emoji} {status_display}{warning}
+• <b>Действует до:</b> {end_date} ({time_left})
+• <b>Трафик:</b> {traffic}
+• <b>Устройства:</b> {devices_used} / {device_limit}""",
         )
 
     if not show_devices:
-        message_template = message_template.replace(
-            '\n📱 Устройства: {devices_used} / {device_limit}',
-            '',
+        message_template = (
+            message_template.replace('\n• <b>Устройства:</b> {devices_used} / {device_limit}', '')
+            .replace('\n📱 Устройства: {devices_used} / {device_limit}', '')
         )
 
     device_limit_display = Texts.format_device_limit(subscription.device_limit)
@@ -485,17 +424,19 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
     if show_devices and devices_list:
         message += '\n\n' + texts.t(
             'SUBSCRIPTION_CONNECTED_DEVICES_TITLE',
-            '<blockquote>📱 <b>Подключенные устройства:</b>\n',
+            '📱 <b>Устройства:</b>\n',
         )
         for device in devices_list[:5]:
             platform = device.get('platform', 'Unknown')
             device_model = device.get('deviceModel', 'Unknown')
-            device_info = f'{platform} - {device_model}'
+            device_info = f'{platform} — {device_model}'
 
             if len(device_info) > 35:
                 device_info = device_info[:32] + '...'
             message += f'• {device_info}\n'
-        message += texts.t('SUBSCRIPTION_CONNECTED_DEVICES_FOOTER', '</blockquote>')
+        footer = texts.t('SUBSCRIPTION_CONNECTED_DEVICES_FOOTER', '')
+        if footer:
+            message += footer
 
     # Отображаем докупленный трафик
     if subscription.traffic_limit_gb > 0:  # Только для лимитированных тарифов
@@ -516,42 +457,16 @@ async def show_subscription_info(callback: types.CallbackQuery, db_user: User, d
         if purchases:
             message += '\n\n' + texts.t(
                 'SUBSCRIPTION_PURCHASED_TRAFFIC_TITLE',
-                '<blockquote>📦 <b>Докупленный трафик:</b>\n',
+                '📈 <b>Докупленный трафик:</b>\n',
             )
 
             for purchase in purchases:
-                time_remaining = purchase.expires_at - now
-                days_remaining = max(0, int(time_remaining.total_seconds() / 86400))
-
-                # Генерируем прогресс-бар
-                total_duration_seconds = (purchase.expires_at - purchase.created_at).total_seconds()
-                elapsed_seconds = (now - purchase.created_at).total_seconds()
-                progress_percent = min(
-                    100.0,
-                    max(0.0, (elapsed_seconds / total_duration_seconds * 100) if total_duration_seconds > 0 else 0),
-                )
-
-                bar_length = 10
-                filled = int((progress_percent / 100) * bar_length)
-                bar = '▰' * filled + '▱' * (bar_length - filled)
-
-                # Форматируем дату истечения
                 expire_date = format_local_datetime(purchase.expires_at, '%d.%m.%Y')
+                message += f'• +{purchase.traffic_gb} ГБ (до {expire_date})\n'
 
-                # Формируем текст о времени
-                if days_remaining == 0:
-                    time_text = 'истекает сегодня'
-                elif days_remaining == 1:
-                    time_text = 'остался 1 день'
-                elif days_remaining < 5:
-                    time_text = f'осталось {days_remaining} дня'
-                else:
-                    time_text = f'осталось {days_remaining} дней'
-
-                message += f'• {purchase.traffic_gb} ГБ — {time_text}\n'
-                message += f'  {bar} {progress_percent:.0f}% | до {expire_date}\n'
-
-            message += texts.t('SUBSCRIPTION_PURCHASED_TRAFFIC_FOOTER', '</blockquote>')
+            footer = texts.t('SUBSCRIPTION_PURCHASED_TRAFFIC_FOOTER', '')
+            if footer:
+                message += footer
 
     subscription_link = get_display_subscription_link(subscription)
     hide_subscription_link = settings.should_hide_subscription_link()

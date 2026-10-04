@@ -486,7 +486,7 @@ def _build_cabinet_main_menu_keyboard(
                     if not section_cfg.get('enabled', True):
                         continue
                     default_sub_text = (
-                        texts.t('MY_SUBSCRIPTIONS_BUTTON', '📱 Мои подписки')
+                        texts.t('MY_SUBSCRIPTIONS_BUTTON', '🛡 Мои подписки')
                         if settings.is_multi_tariff_enabled()
                         else texts.MENU_SUBSCRIPTION
                     )
@@ -678,7 +678,7 @@ def get_main_menu_keyboard(
         if happ_row:
             keyboard.append(happ_row)
         sub_btn_text = (
-            texts.t('MY_SUBSCRIPTIONS_BUTTON', '📱 Мои подписки')
+            texts.t('MY_SUBSCRIPTIONS_BUTTON', '🛡 Мои подписки')
             if settings.is_multi_tariff_enabled()
             else texts.MENU_SUBSCRIPTION
         )
@@ -2418,9 +2418,9 @@ def get_yookassa_payment_keyboard(
 def get_autopay_notification_keyboard(subscription_id: int, language: str = DEFAULT_LANGUAGE) -> InlineKeyboardMarkup:
     texts = get_texts(language)
     sub_btn_text = (
-        texts.t('MY_SUBSCRIPTIONS_BUTTON', '📱 Мои подписки')
+        texts.t('MY_SUBSCRIPTIONS_BUTTON', '🛡 Мои подписки')
         if settings.is_multi_tariff_enabled()
-        else texts.t('MY_SUBSCRIPTION_BUTTON', '📱 Моя подписка')
+        else texts.t('MY_SUBSCRIPTION_BUTTON', '🛡 Моя подписка')
     )
 
     return InlineKeyboardMarkup(

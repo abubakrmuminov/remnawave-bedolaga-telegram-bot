@@ -319,16 +319,14 @@ async def show_balance_history(callback: types.CallbackQuery, db_user: User, db:
 
     for transaction in unique_transactions:
         is_credit = transaction.type in CREDIT_TRANSACTION_TYPES
-        emoji = '💰' if is_credit else '💸'
         amount_text = (
             f'+{texts.format_price(transaction.amount_kopeks)}'
             if is_credit
             else f'-{texts.format_price(abs(transaction.amount_kopeks))}'
         )
-
-        text += f'{emoji} {amount_text}\n'
-        text += f'📝 {html.escape(transaction.description or "")}\n'
-        text += f'📅 {format_local_datetime(transaction.created_at, "%d.%m.%Y %H:%M")}\n\n'
+        desc = html.escape(transaction.description or '')
+        date = format_local_datetime(transaction.created_at, "%d.%m.%Y")
+        text += f'• <b>{amount_text}</b> — {desc} ({date})\n'
 
     keyboard = []
     total_pages = (total_unique + TRANSACTIONS_PER_PAGE - 1) // TRANSACTIONS_PER_PAGE
