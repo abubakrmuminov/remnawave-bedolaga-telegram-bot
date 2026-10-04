@@ -117,7 +117,7 @@ class HostileTexts(DummyTexts):
 
 
 def test_rich_flag_default_is_enabled():
-    assert Settings.model_fields['MAIN_MENU_RICH_ENABLED'].default is True
+    assert Settings.model_fields['MAIN_MENU_RICH_ENABLED'].default is False
 
 
 async def test_builder_keeps_premium_emoji_from_operator_texts(monkeypatch):

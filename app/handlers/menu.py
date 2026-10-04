@@ -1258,7 +1258,7 @@ async def handle_back_to_menu(callback: types.CallbackQuery, state: FSMContext, 
 def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -> str:
     subscription = getattr(user, 'subscription', None)
     if not subscription:
-        return texts.t('SUB_STATUS_NONE', '❌ Отсутствует')
+        return texts.t('SUBSCRIPTION_NONE', '❌ Нет активной подписки')
 
     current_time = datetime.now(UTC)
     actual_status = (subscription.actual_status or '').lower()
@@ -1363,7 +1363,7 @@ async def _get_multi_tariff_status(user, texts, db: AsyncSession) -> tuple[str, 
     subscriptions = [sub for sub in subscriptions if not getattr(sub, 'is_pending_trial', False)]
 
     if not subscriptions:
-        return texts.t('SUB_STATUS_NONE', '❌ Отсутствует'), ''
+        return texts.t('SUBSCRIPTION_NONE', '❌ Нет активной подписки'), ''
 
     current_time = datetime.now(UTC)
     lines: list[str] = []
