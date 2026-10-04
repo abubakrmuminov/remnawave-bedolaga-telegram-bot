@@ -1281,7 +1281,7 @@ def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -
     if actual_status == 'expired':
         return texts.t(
             'SUB_STATUS_EXPIRED',
-            '🔴 Истекла\n📅 {end_date}',
+            '🔴 Истекла ({end_date})',
         ).format(end_date=end_date_text or '—')
 
     is_trial_subscription = getattr(subscription, 'is_trial', False)
@@ -1292,7 +1292,7 @@ def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -
         if days_left > 1 and end_date_text:
             return texts.t(
                 'SUB_STATUS_TRIAL_ACTIVE',
-                '🎁 Тестовая подписка\n📅 до {end_date} ({days} дн.)',
+                '🎁 Тестовая — до {end_date} ({days} дн.)',
             ).format(
                 end_date=end_date_text,
                 days=days_left,
@@ -1300,11 +1300,11 @@ def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -
         if days_left == 1:
             return texts.t(
                 'SUB_STATUS_TRIAL_TOMORROW',
-                '🎁 Тестовая подписка\n⚠️ истекает завтра!',
+                '🎁 Тестовая — ⚠️ истекает завтра!',
             )
         return texts.t(
             'SUB_STATUS_TRIAL_TODAY',
-            '🎁 Тестовая подписка\n⚠️ истекает сегодня!',
+            '🎁 Тестовая — ⚠️ истекает сегодня!',
         )
 
     if actual_status == 'active':
@@ -1315,7 +1315,7 @@ def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -
         if days_left > 7 and end_date_text:
             return texts.t(
                 'SUB_STATUS_ACTIVE_LONG',
-                '💎 Активна\n📅 до {end_date} ({days} дн.)',
+                '💎 Активна — до {end_date} ({days} дн.)',
             ).format(
                 end_date=end_date_text,
                 days=days_left,
@@ -1323,16 +1323,16 @@ def _get_subscription_status(user: User, texts, is_daily_tariff: bool = False) -
         if days_left > 1:
             return texts.t(
                 'SUB_STATUS_ACTIVE_FEW_DAYS',
-                '💎 Активна\n⚠️ истекает через {days} дн.',
+                '💎 Активна — ⚠️ истекает через {days} дн.',
             ).format(days=days_left)
         if days_left == 1:
             return texts.t(
                 'SUB_STATUS_ACTIVE_TOMORROW',
-                '💎 Активна\n⚠️ истекает завтра!',
+                '💎 Активна — ⚠️ истекает завтра!',
             )
         return texts.t(
             'SUB_STATUS_ACTIVE_TODAY',
-            '💎 Активна\n⚠️ истекает сегодня!',
+            '💎 Активна — ⚠️ истекает сегодня!',
         )
 
     return texts.t('SUB_STATUS_UNKNOWN', '❓ Неизвестно')
@@ -1428,19 +1428,18 @@ async def get_main_menu_text(user, texts, db: AsyncSession):
                 tariff = await get_tariff_by_id(db, subscription.tariff_id)
                 if tariff:
                     is_daily_tariff = getattr(tariff, 'is_daily', False)
-                    tariff_info_block = f'\n📦 Тариф: {html.escape(tariff.name)}'
+                    tariff_info_block = f'📦 <b>Тариф:</b> {html.escape(tariff.name)}'
             except Exception as e:
                 logger.debug('Не удалось загрузить тариф для главного меню', error=e)
 
+        sub_status = _get_subscription_status(user, texts, is_daily_tariff)
+        if tariff_info_block and subscription and getattr(subscription, 'is_active', False):
+            sub_status = f'{sub_status}\n{tariff_info_block}'
+
         base_text = texts.MAIN_MENU.format(
             user_name=html.escape(user.full_name or ''),
-            subscription_status=_get_subscription_status(user, texts, is_daily_tariff),
+            subscription_status=sub_status,
         )
-
-        if tariff_info_block:
-            action_prompt_text = texts.t('MAIN_MENU_ACTION_PROMPT', 'Выберите действие:')
-            if action_prompt_text in base_text:
-                base_text = base_text.replace(action_prompt_text, f'{tariff_info_block}\n\n{action_prompt_text}')
 
     action_prompt = texts.t('MAIN_MENU_ACTION_PROMPT', 'Выберите действие:')
 
