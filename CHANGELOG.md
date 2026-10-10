@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.1.0](https://github.com/abubakrmuminov/remnawave-bedolaga-telegram-bot/compare/v5.0.0...v5.1.0) (2026-10-10)
+
+
+### New Features
+
+* **emoji:** add custom emoji mapping for 📦 (5936130851635990622) ([92676b6](https://github.com/abubakrmuminov/remnawave-bedolaga-telegram-bot/commit/92676b6a30ea45256ec5cc0c0b9cdf6b7726f58a))
+* integrate custom premium emojis for main statuses and UI ([977ece3](https://github.com/abubakrmuminov/remnawave-bedolaga-telegram-bot/commit/977ece3a882597756cc5d54b2888870c7e268e65))
+* **menu:** simplify main menu layout with shield icon and disable rich menu by default ([9f5cb78](https://github.com/abubakrmuminov/remnawave-bedolaga-telegram-bot/commit/9f5cb78e0ad3b7a76733f77b1d894f6d26c10460))
+* **ui:** redesign internal pages with clean minimalist layout ([19de080](https://github.com/abubakrmuminov/remnawave-bedolaga-telegram-bot/commit/19de0808ec3eb106ebb327c3d540c8fdb744f741))
+
 ## [5.0.0](https://github.com/BEDOLAGA-DEV/remnawave-bedolaga-telegram-bot/compare/v4.16.0...v5.0.0) (2026-09-29)
 
 
